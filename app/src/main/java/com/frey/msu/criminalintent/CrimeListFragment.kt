@@ -76,9 +76,10 @@ class CrimeListFragment : Fragment() {
                 //val crimes = crimeListViewModel.loadCrimes()
                 crimeListViewModel.crimes.collect { crimes ->
                     binding.crimeRecyclerView.adapter =
-                        CrimeListAdapter(crimes){
+                        CrimeListAdapter(crimes){ crimeId->
                             findNavController().navigate(
-                                R.id.show_crime_detail
+                               // R.id.show_crime_detail
+                            CrimeListFragmentDirections.showCrimeDetail(crimeId)
                             )
                         }
                 }
