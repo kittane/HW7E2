@@ -71,7 +71,11 @@ class CrimeDetailFragment : Fragment() {
 
             // listener for edit text
             crimeTitle.doOnTextChanged { text, _, _, _ ->
-                // crime = crime.copy(title = text.toString())
+                // crime = crime.copy(title = text.toString())'false'
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(title = text.toString())
+                }
+
             }
 
             // listener for button
@@ -84,6 +88,7 @@ class CrimeDetailFragment : Fragment() {
             // listener for textbox changes
             crimeSolved.setOnCheckedChangeListener { _, isCheckeed ->
                 //  crime = crime.copy(isSolved = isCheckeed)
+                crimeDetailViewModel.updateCrime { oldCrime -> oldCrime.copy(isSolved = isCheckeed) }
 
 
             }
