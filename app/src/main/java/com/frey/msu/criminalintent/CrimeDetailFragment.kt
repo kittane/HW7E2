@@ -8,25 +8,36 @@ import android.view.ViewGroup
 import androidx.core.view.doOnAttach
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import com.frey.msu.criminalintent.databinding.FragmentCrimeDetailBinding
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
-private const val TAG = "CrimeDetailFragment"
+//private const val TAG = "CrimeDetailFragment"
 
 class CrimeDetailFragment : Fragment() {
 
-    private lateinit var crime: Crime
+    //private lateinit var crime: Crime
     private val args: CrimeDetailFragmentArgs by navArgs()
+
+    private val crimeDetailViewModel: CrimeDetailViewModel by viewModels {
+        CrimeDetailViewModelFactory(args.crimeId)
+    }
+
     //private lateinit var binding: FragmentCrimeDetailBinding
-    private var _binding : FragmentCrimeDetailBinding? = null
+    private var _binding: FragmentCrimeDetailBinding? = null
 
-            private val binding
-            get() = checkNotNull(_binding){
-                "Cannot access binding because it is null. Is the view visible?"
-            }
+    private val binding
+        get() = checkNotNull(_binding) {
+            "Cannot access binding because it is null. Is the view visible?"
+        }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    /* override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         crime = Crime(
@@ -38,7 +49,7 @@ class CrimeDetailFragment : Fragment() {
 
         )
         Log.d(TAG, "The crime ID is: ${args.crimeId}")
-    }
+    }*/
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +57,7 @@ class CrimeDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-       // binding = FragmentCrimeDetailBinding.inflate(layoutInflater, container, false)
+        // binding = FragmentCrimeDetailBinding.inflate(layoutInflater, container, false)
         _binding = FragmentCrimeDetailBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -60,22 +71,49 @@ class CrimeDetailFragment : Fragment() {
 
             // listener for edit text
             crimeTitle.doOnTextChanged { text, _, _, _ ->
-                crime = crime.copy(title = text.toString())
+                // crime = crime.copy(title = text.toString())
             }
 
             // listener for button
             crimeDate.apply {
-                text = crime.date.toString()
+                //text = crime.date.toString()
                 isEnabled = false
 
+            }
+
+            // listener for textbox changes
+            crimeSolved.setOnCheckedChangeListener { _, isCheckeed ->
+                //  crime = crime.copy(isSolved = isCheckeed)
+
+
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                crimeDetailViewModel.crime.collect { crime ->
+                    crime?.let { updateUi(it) }
+                }
             }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // binding = null
-        _binding = null
+    private fun updateUi(crime: Crime) {
+
+        binding.apply {
+            if (crimeTitle.text.toString() != crime.title) {
+                crimeTitle.setText(crime.title)
+            }
+            crimeDate.text = crime.date.toString()
+            crimeSolved.isChecked = crime.isSolved
+        }
     }
-}
+
+        override fun onDestroy() {
+            super.onDestroy()
+            // binding = null
+            _binding = null
+        }
+    }
+
 
