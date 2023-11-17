@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnAttach
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -12,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.frey.msu.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.flow.collect
@@ -36,6 +38,18 @@ class CrimeDetailFragment : Fragment() {
         get() = checkNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
+
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (binding.crimeTitle.text.isNullOrBlank()) {
+                // Crime title is blank, show a hint and prevent navigation
+                binding.crimeTitle.error = "Please provide a description of the crime"
+            } else {
+                // Crime title is not blank, navigate back using NavController
+                findNavController().navigateUp()
+            }
+        }
+    }
 
     /* override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +107,11 @@ class CrimeDetailFragment : Fragment() {
 
             }
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            onBackPressedCallback
+        )
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
